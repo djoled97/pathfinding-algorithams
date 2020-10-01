@@ -1,64 +1,77 @@
-import { wait } from "./dijkstra";
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-continue */
+import { wait } from './dijkstra';
 
 const size = 50;
+
+// const animateChecked = async (ctx, checked) => {
+// 	for (let i = 0; i < checked.length; i += 1) {
+// 		await wait(100);
+// 		ctx.fillStyle = 'blue';
+// 		ctx.fillRect(checked[i].x * size, checked[i].y * size, size, size);
+// 		ctx.strokeRect(checked[i].x * size, checked[i].y * size, size, size);
+// 	}
+// };
+
 const bfs = async (ctx, start, end) => {
-  let queue = [];
-  let checked = [];
- 
-  queue.push(start);
+	const startime = window.performance.now();
 
- 
- 
+	const queue = [];
+	const checked = [];
 
-  while (queue.length) {
-    let current = queue.shift();
+	queue.push(start);
 
-    current.isVisited = true;
-    checked.push(current);
-    const { neighbors } = current;
-    if (current === end) {
-      await animateChecked(ctx, checked);
+	while (queue.length > 0) {
+		const current = queue.shift();
 
-      return new Promise((resolve) => resolve({ checked: checked }));
-    }
+		current.isVisited = true;
+		checked.push(current);
+		const { neighbors } = current;
+		if (current === end) {
+			// await animateChecked(ctx, checked);
 
-    for (let i = 0; i < neighbors.length; i++) {
-      let neighbor = neighbors[i];
+			const endTime = window.performance.now();
+			const time = (endTime - startime).toFixed(4);
 
-      if (neighbor.isVisited) continue;
+			return new Promise(resolve => resolve({ checked, time }));
+		}
 
-      if (neighbor.wall) continue;
-      queue.push(neighbor);
-      neighbor.isVisited = true;
-      neighbor.parent = current;
-    }
+		for (let i = 0; i < neighbors.length; i += 1) {
+			const neighbor = neighbors[i];
 
-    
-  }
-  return "error";
+			if (neighbor.isVisited) {
+				continue;
+			}
+
+			if (neighbor.wall) continue;
+			queue.push(neighbor);
+			neighbor.isVisited = true;
+			neighbor.parent = current;
+		}
+	}
+	return 'error';
 };
 
-const animateChecked = async (ctx, checked) => {
-  for (let i = 0; i < checked.length; i++) {
-    await wait(50);
-    ctx.fillStyle = "blue";
-    ctx.fillRect(checked[i].x * size, checked[i].y * size, size, size);
-    ctx.strokeRect(checked[i].x * size, checked[i].y * size, size, size);
-  }
-};
-export const showBfsPath = (ctx, path, start, end) => {
-  for (let i = 0; i < path.length; i++) {
-    ctx.beginPath();
-    ctx.fillStyle = "yellow";
-    ctx.fillRect(path[i].x * size, path[i].y * size, size, size);
-    ctx.strokeRect(path[i].x * size, path[i].y * size, size, size);
-  }
-  ctx.beginPath();
-  ctx.fillStyle = "black";
-  ctx.font = "20px Calibri";
-  ctx.fillText("Start", start.x * size + 5, start.y * size + 30);
+export const showBfsPath = async (ctx, path, start, end) => {
+	for (let i = 0; i < path.length; i += 1) {
+		ctx.beginPath();
+		ctx.clearRect(path[i].x * size, path[i].y * size, size, size);
+		ctx.strokeRect(path[i].x * size, path[i].y * size, size, size);
+	}
 
-  ctx.fillText("End", end.x * size + 5, end.y * size + 30); 
+	for (let i = 0; i < path.length; i += 1) {
+		await wait(50);
+		ctx.beginPath();
+		ctx.fillStyle = 'yellow';
+		ctx.fillRect(path[i].x * size, path[i].y * size, size, size);
+		ctx.strokeRect(path[i].x * size, path[i].y * size, size, size);
+	}
+	ctx.beginPath();
+	ctx.fillStyle = 'black';
+	ctx.font = '20px Calibri';
+	ctx.fillText('Start', start.x * size + 5, start.y * size + 30);
+
+	ctx.fillText('End', end.x * size + 5, end.y * size + 30);
 };
 
 export { bfs };
